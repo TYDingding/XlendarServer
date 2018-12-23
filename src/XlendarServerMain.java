@@ -37,9 +37,18 @@ public class XlendarServerMain {
             connection = DriverManager.getConnection("jdbc:sqlite:D:\\Xlendar\\lib\\xlendar.db2");
             statement = connection.createStatement();
 
+            rs = connection.getMetaData().getTables(null,null,"event", null);
+
+
+            if (rs.next()) {
+
+            }else {
             statement.executeUpdate("DROP TABLE IF EXISTS event");
             statement.executeUpdate("CREATE TABLE event(eventId string , date string , time string ," +
                     " eventName string)");
+            }
+
+
         }catch (SQLException e){
             System.err.println(e.getMessage());
         } catch (Exception e) {
