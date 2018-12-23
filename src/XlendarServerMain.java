@@ -34,7 +34,7 @@ public class XlendarServerMain {
     private void listen() {
 
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:D:\\Xlendar\\lib\\xlendar.db2");
+            connection = DriverManager.getConnection("jdbc:sqlite:C:\\Xlendar\\lib\\xlendar.db2");
             statement = connection.createStatement();
 
             rs = connection.getMetaData().getTables(null,null,"event", null);
@@ -44,7 +44,7 @@ public class XlendarServerMain {
 
             }else {
             statement.executeUpdate("DROP TABLE IF EXISTS event");
-            statement.executeUpdate("CREATE TABLE event(eventId string , date string , time string ," +
+            statement.executeUpdate("CREATE TABLE event(week string,eventId string , date string , time string ," +
                     " eventName string)");
             }
 
@@ -84,7 +84,6 @@ public class XlendarServerMain {
             this.socket = socket;
         }
 
-        @Override
         public void run() {
             InputStream in = null;
             try {
@@ -95,19 +94,18 @@ public class XlendarServerMain {
                 while ((line = rd.readLine()) != null) {
                     System.out.println(line);
                     //Data into database
-                    try{
-                        if(connection.isClosed()){
-                            System.out.println("Connection is closed");
-                        }
-                        if(statement.isClosed()){
-                            System.out.println("Statement is closed!");
-                        }
+                    if(line == "Hello"){
 
-                        statement.executeUpdate(line);
-                    }catch(SQLException e1){
-                        System.out.println(e1.getErrorCode());
+
+
+
+                    }else{
+                        try{
+                            statement.executeUpdate(line);
+                        }catch(SQLException e1){
+                            System.out.println(e1.getErrorCode());
+                        }
                     }
-
                 }
 
 
