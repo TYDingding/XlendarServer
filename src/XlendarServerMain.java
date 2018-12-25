@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -34,7 +31,7 @@ public class XlendarServerMain {
     private void listen() {
 
         try {
-            connection = DriverManager.getConnection("jdbc:sqlite:C:\\Xlendar\\lib\\xlendar.db2");
+            connection = DriverManager.getConnection("jdbc:sqlite:D:\\Xlendar\\lib\\xlendar.db2");
             statement = connection.createStatement();
 
             rs = connection.getMetaData().getTables(null,null,"event", null);
@@ -44,7 +41,7 @@ public class XlendarServerMain {
 
             }else {
             statement.executeUpdate("DROP TABLE IF EXISTS event");
-            statement.executeUpdate("CREATE TABLE event(week string,eventId string , date string , time string ," +
+            statement.executeUpdate("CREATE TABLE event(week string,eventId string , date string , eventTime string ," +
                     " eventName string)");
             }
 
@@ -79,25 +76,46 @@ public class XlendarServerMain {
     class ClientThread extends Thread {
 
         Socket socket;
+        PrintWriter out;
 
         public ClientThread(Socket socket) {
             this.socket = socket;
         }
 
         public void run() {
+
             InputStream in = null;
             try {
                 in = socket.getInputStream();
 
                 BufferedReader rd = new BufferedReader(new InputStreamReader(in));
                 String line;
+                String[] sourceStrArray;
                 while ((line = rd.readLine()) != null) {
                     System.out.println(line);
+                    sourceStrArray = line.split(",");
                     //Data into database
-                    if(line == "Hello"){
+                    if(sourceStrArray[1].equals("Hello")){
+                        out = new PrintWriter(socket.getOutputStream());
+                        try {
+                            if (statement.isClosed() != false){
+                                statement.executeUpdate("SELECT eventId, eventTime, eventName FROM event WHERE week='"+sourceStrArray[0]+"'");
+                                ResultSet rs1 = statement.getResultSet();
+                                while (rs1.next()){
+                                    String message = rs1.getString("eventId");
+                                    message = message + "," + rs.getString("eventTime");
+                                    message = message + "," + rs.getString("eventName");
+                                    out.print(message);
+                                    out.flush();
+                                }
+                            }else{
+                                out.print("No");
+                                out.flush();
+                            }
 
-
-
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
 
                     }else{
                         try{
@@ -126,6 +144,7 @@ public class XlendarServerMain {
                     if(in != null){
                         in.close();
                     }
+                    out.close();
                     socket.close();
                 }catch (IOException e) {
                     e.printStackTrace();
